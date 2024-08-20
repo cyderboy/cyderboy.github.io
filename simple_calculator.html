@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+        }
+        .calculator {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 1.2em;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #result {
+            font-size: 1.4em;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <h2>Simple Calculator</h2>
+    
+    <input type="number" id="num1" placeholder="Enter first number" />
+    <input type="number" id="num2" placeholder="Enter second number" />
+    
+    <button onclick="calculate('addition')">Add</button>
+    <button onclick="calculate('subtraction')">Subtract</button>
+    <button onclick="calculate('multiplication')">Multiply</button>
+    <button onclick="calculate('division')">Divide</button>
+    
+    <div id="result"></div>
+</div>
+
+<script>
+    const simpleCalculator = {
+        addition: function(a, b) {
+            return a + b;
+        },
+        
+        subtraction: function(a, b) {
+            return a - b;
+        },
+        
+        multiplication: function(a, b) {
+            return a * b;
+        },
+        
+        division: function(a, b) {
+            if (b === 0) {
+                return "Error! Division by zero.";
+            } else {
+                return a / b;
+            }
+        }
+    };
+
+    function calculate(operation) {
+        const num1 = parseFloat(document.getElementById('num1').value);
+        const num2 = parseFloat(document.getElementById('num2').value);
+        let result;
+        
+        if (isNaN(num1) || isNaN(num2)) {
+            result = "Please enter valid numbers!";
+        } else {
+            result = simpleCalculator[operation](num1, num2);
+        }
+
+        document.getElementById('result').textContent = result;
+    }
+</script>
+
+</body>
+</html>
