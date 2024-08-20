@@ -1,16 +1,27 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <title>replit</title>
-  <link href="style.css" rel="stylesheet" type="text/css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Oregon Trail Game</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: rgb(221, 193, 167); /* Background color to match game */
+        }
+        canvas {
+            border: 2px solid rgb(91, 79, 71);
+        }
+    </style>
 </head>
-
 <body>
-  The Oregon Trail
-  <script src="script.js"></script>
+    <canvas id="gameCanvas"></canvas>
+    
+    <script src="game.js"></script>
 </body>
-
 </html>
+
