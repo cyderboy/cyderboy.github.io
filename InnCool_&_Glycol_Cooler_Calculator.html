@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>InnCool & Glycol Cooler Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+      margin-bottom: 15px;
+    }
+
+    select:disabled {
+      background-color: #f5f5f5;
+      cursor: not-allowed;
+    }
+
+    .reset-btn {
+      background-color: white;
+      border: 1px solid #ddd;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.875rem;
+    }
+
+    .reset-btn:hover {
+      background-color: #f5f5f5;
+    }
+
+    .result {
+      background-color: #e8f5e9;
+      padding: 16px;
+      border-radius: 4px;
+      text-align: center;
+      font-weight: 500;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .error {
+      background-color: #ffebee;
+      color: #c62828;
+      padding: 16px;
+      border-radius: 4px;
+      margin-top: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <h1 class="card-title">InnCool Conversion Calculator</h1>
+      <button class="reset-btn" onclick="resetForm()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+          <path d="M3 3v5h5"></path>
+        </svg>
+        Reset
+      </button>
+    </div>
+
+    <div class="form-group">
+      <label for="coolerType">Select Cooler Type:</label>
+      <select id="coolerType" onchange="handleCoolerChange()">
+        <option value="">Choose a cooler type</option>
+        <option value="Remote Cooler">Remote Cooler</option>
+        <option value="Mini 4 Cooler">Mini 4 Cooler</option>
+        <option value="140L Glycol Cooler">140L Glycol Cooler</option>
+      </select>
+
+      <label for="reading">Current InnCool Reading (%):</label>
+      <select id="reading" onchange="handleReadingChange()" disabled>
+        <option value="">Select current reading</option>
+      </select>
+
+      <input type="number" id="glycolPercent" placeholder="Enter current glycol %" min="0" max="100" step="any" style="display:none;" />
+    </div>
+
+    <div id="error" class="error"></div>
+    <div id="result" class="result"></div>
+  </div>
+
+  <script>
+    const conversionData = {
+      'Remote Cooler': {
+        '0.5': 5.4, '1.0': 5.1, '1.5': 4.8, '2.0': 4.5, '2.5': 4.2,
+        '3.0': 3.8, '3.5': 3.5, '4.0': 3.2, '4.5': 2.9, '5.0': 2.6,
+        '5.5': 2.2, '6.0': 1.9, '6.5': 1.6, '7.0': 1.3, '7.5': 1.0,
+        '8.0': 0.6, '8.5': 0.3, '9.0': 0.0
+      },
+      'Mini 4 Cooler': {
+        '0.5': 2.7, '1.0': 2.6, '1.5': 2.4, '2.0': 2.2, '2.5': 2.1,
+        '3.0': 1.9, '3.5': 1.8, '4.0': 1.6, '4.5': 1.4, '5.0': 1.3,
+        '5.5': 1.1, '6.0': 1.0, '6.5': 0.8, '7.0': 0.6, '7.5': 0.5,
+        '8.0': 0.3, '8.5': 0.2, '9.0': 0.0
+      }
+    };
+
+    const readingSelect = document.getElementById('reading');
+    const glycolInput = document.getElementById('glycolPercent');
+    const resultDiv = document.getElementById('result');
+    const errorDiv = document.getElementById('error');
+
+    for (let i = 1; i <= 18; i++) {
+      const value = (i * 0.5).toFixed(1);
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = value + '%';
+      readingSelect.appendChild(option);
+    }
+
+    function handleCoolerChange() {
+      const coolerType = document.getElementById('coolerType').value;
+      resultDiv.style.display = 'none';
+      errorDiv.style.display = 'none';
+
+      if (coolerType === '140L Glycol Cooler') {
+        readingSelect.disabled = true;
+        glycolInput.style.display = 'block';
+      } else {
+        readingSelect.disabled = !coolerType;
+        glycolInput.style.display = 'none';
+      }
+
+      readingSelect.value = '';
+      glycolInput.value = '';
+    }
+
+    function handleReadingChange() {
+      const coolerType = document.getElementById('coolerType').value;
+      const reading = readingSelect.value;
+
+      if (coolerType && reading) {
+        const convertedValue = conversionData[coolerType][reading];
+        if (convertedValue !== undefined) {
+          resultDiv.textContent = `Additional InnCool to add: ${convertedValue} litres`;
+          resultDiv.style.display = 'block';
+          errorDiv.style.display = 'none';
+        } else {
+          errorDiv.textContent = 'Invalid reading value';
+          errorDiv.style.display = 'block';
+          resultDiv.style.display = 'none';
+        }
+      }
+    }
+
+    glycolInput.addEventListener('input', function () {
+      const value = parseFloat(glycolInput.value);
+      const V = 140;
+      const target = 0.3;
+
+      if (isNaN(value) || value < 0 || value > 100) {
+        errorDiv.textContent = 'Please enter a valid percentage between 0 and 100.';
+        errorDiv.style.display = 'block';
+        resultDiv.style.display = 'none';
+        return;
+      }
+
+      errorDiv.style.display = 'none';
+
+      const current = value / 100;
+      let x;
+
+      if (current === target) {
+        resultDiv.textContent = 'The current concentration is already at the target (30%). No adjustment needed.';
+      } else if (current < target) {
+        x = V * (target - current) / (1 - current);
+        resultDiv.textContent = `Additional Glycol to add: ${x.toFixed(1)} litres`;
+      } else {
+        x = V * (current - target) / current;
+        resultDiv.textContent = `Water to add: ${x.toFixed(1)} litres`;
+      }
+
+      resultDiv.style.display = 'block';
+    });
+
+    function resetForm() {
+      document.getElementById('coolerType').value = '';
+      readingSelect.value = '';
+      glycolInput.value = '';
+      readingSelect.disabled = true;
+      glycolInput.style.display = 'none';
+      resultDiv.style.display = 'none';
+      errorDiv.style.display = 'none';
+    }
+  </script>
+</body>
+</html>
